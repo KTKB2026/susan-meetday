@@ -58,6 +58,18 @@
   .board-bar a{font-size:11px;color:var(--dim)}
   .board iframe{display:none;width:100%;height:72vh;border:0;border-top:1px solid var(--line);background:#fff}
   .board.open iframe{display:block}
+  .fp{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:14px}
+  .fp-head{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:4px}
+  .fp-sub{font-size:12px;color:#c2c9d2;margin-bottom:8px}
+  .fp-in{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:8px}
+  .fp-in label{display:block;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin-bottom:3px;text-align:center}
+  .fp-in input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:7px;font-size:16px;font-weight:700;text-align:center;padding:6px 2px;font-variant-numeric:tabular-nums}
+  .fp-row{display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:center;padding:7px 0;border-top:1px solid var(--line);font-size:13px}
+  .fp-row .lk{font-weight:800;font-size:11px;letter-spacing:.08em}
+  .fp-row .lk.sq{color:var(--sq)} .fp-row .lk.bp{color:var(--bp)} .fp-row .lk.dl{color:var(--dl)}
+  .fp-row .tx{color:#c2c9d2;line-height:1.3} .fp-row .tx b{color:var(--text);font-variant-numeric:tabular-nums}
+  .fp-row button{font:inherit;font-size:11px;font-weight:700;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:6px 8px;cursor:pointer;white-space:nowrap}
+  .fp-note{font-size:11px;color:var(--dim);margin-top:6px}
   .collar{display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;color:var(--dim);margin:-6px 0 14px}
   .tog{width:40px;height:22px;border-radius:11px;background:var(--panel2);border:1px solid var(--line);position:relative;cursor:pointer}
   .tog::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--dim);transition:left .15s}
@@ -173,7 +185,7 @@
 <header>
   <div class="eyebrow"><span>MASS Strength</span><span>★ Meet Day</span></div>
   <h1>Susan — IDFPA Worlds</h1>
-  <div class="sub">Nov 7, 2026 · Houston · Masters 75–79 · Best total 230 (Nov 2024) · Last meet 212.5 @ -65 (Jun 2026 Nationals)</div>
+  <div class="sub">Nov 7, 2026 · Houston · Flight B, one platform, lifting from 8:00 · Masters 75–79 · Best total 230 (Nov 2024) · Last meet 212.5 @ -65 (Jun 2026 Nationals)</div>
 </header>
 
 <!-- STICKY: attempt clock + lifters-until-up counter -->
@@ -213,6 +225,21 @@
     <a id="board-ext" target="_blank" rel="noopener">open full</a>
   </div>
   <iframe id="board-frame" title="LiftingCast live board" loading="lazy"></iframe>
+</div>
+
+<!-- FLIGHT PLAN -->
+<div class="fp">
+  <div class="fp-head">Flight plan · one platform</div>
+  <div class="fp-sub">Susan is in <b>Flight B</b>. Each lift goes A → B → C. Flight A squats at <b>8:00</b>.</div>
+  <div class="fp-in">
+    <div><label>A lifters</label><input id="fp-a" inputmode="numeric" placeholder="#"></div>
+    <div><label>B lifters</label><input id="fp-b" inputmode="numeric" placeholder="#"></div>
+    <div><label>C lifters</label><input id="fp-c" inputmode="numeric" placeholder="#"></div>
+    <div><label>Her spot in B</label><input id="fp-pos" inputmode="numeric" placeholder="#"></div>
+    <div><label>Break min</label><input id="fp-brk" inputmode="numeric" placeholder="0"></div>
+  </div>
+  <div id="fp-out"></div>
+  <div class="fp-note">Fill from LiftingCast in the morning. Times assume about 1 min per attempt and the break you enter between lifts. "Her spot" is her place in round 1 of Flight B (lightest opener goes first). Set count covers her opener only.</div>
 </div>
 
 <div class="collar"><span>Plate math: 20 kg bar</span><div class="tog" id="tog-collar" onclick="toggleCollar()"></div><span id="collar-lab">+ 2.5 kg collars</span></div>
@@ -395,6 +422,47 @@ function renderCollar(){
   document.getElementById('tog-collar').classList.toggle('on',COLLARS);
   document.getElementById('collar-lab').textContent = COLLARS ? '+ 2.5 kg collars' : 'no collars';
 }
+
+/* ===== FLIGHT PLAN (one platform, A -> B -> C each lift) ===== */
+const SESSION_START='08:00';
+function fpVals(){
+  const g=id=>{const v=parseInt(document.getElementById(id).value);return isNaN(v)?null:v;};
+  return {a:g('fp-a'),b:g('fp-b'),c:g('fp-c'),pos:g('fp-pos'),brk:g('fp-brk')||0};
+}
+function fpCalc(){
+  const v=fpVals(); if(v.a===null) return null;
+  const pos=v.pos||1, total=(v.a||0)+(v.b||0)+(v.c||0), full=v.b!==null&&v.c!==null;
+  const [hh,mm]=SESSION_START.split(':').map(Number);
+  const at=min=>{const d=new Date();d.setHours(hh,mm,0,0);d.setMinutes(d.getMinutes()+min);return d;};
+  return ['sq','bp','dl'].map((k,i)=>{
+    const flightStart = full ? i*(3*total+v.brk) + 3*v.a : (i===0?3*v.a:null);
+    return {k, count:3*v.a+pos-1, bStart: flightStart===null?null:at(flightStart), opener: flightStart===null?null:at(flightStart+pos-1)};
+  });
+}
+function renderFP(){
+  const out=document.getElementById('fp-out'), r=fpCalc();
+  if(!r){ out.innerHTML=''; return; }
+  const nm={sq:'SQ',bp:'BP',dl:'DL'}, wh={sq:'Flight A starts squatting (8:00)',bp:'Flight A starts benching',dl:'Flight A starts deadlifting'};
+  out.innerHTML=r.map(x=>'<div class="fp-row"><span class="lk '+x.k+'">'+nm[x.k]+'</span><span class="tx">Count <b>'+x.count+'</b> when '+wh[x.k]+
+    (x.bStart?'<br>B starts ~<b>'+fmtTime(x.bStart)+'</b> · her opener ~<b>'+fmtTime(x.opener)+'</b>':'<br>Enter B and C lifters for times')+
+    '</span><button onclick="fpSet(\''+x.k+'\','+x.count+')">Set count</button></div>').join('')+
+    (r[0].bStart?'<div class="fp-row"><span></span><span class="tx">Copy B start and her spot into each lift\'s warm-up back-calc</span><button onclick="fpFill()">Fill timers</button></div>':'');
+}
+function fpSet(k,n){ LIFT=k; store('lift',k); CNT[k]=n; store('cnt',CNT); syncCnum(); pace(); tickClock(); window.scrollTo({top:0,behavior:'smooth'}); }
+function fpFill(){
+  const r=fpCalc(), v=fpVals(); if(!r) return;
+  r.forEach(x=>{
+    if(!x.bStart) return;
+    const c=document.querySelector('.lift[data-lift="'+x.k+'"] .wu-calc');
+    c.querySelector('.fstart').value=String(x.bStart.getHours()).padStart(2,'0')+':'+String(x.bStart.getMinutes()).padStart(2,'0');
+    c.querySelector('.fpos').value=v.pos||1;
+    if(v.b!==null) c.querySelector('.fsize').value=v.b;
+    updateOpenerLabel(c);
+  });
+  saveFlights();
+}
+function saveFP(){ store('fp',['fp-a','fp-b','fp-c','fp-pos','fp-brk'].map(id=>document.getElementById(id).value)); }
+function restoreFP(){ const d=load('fp'); if(!d) return; ['fp-a','fp-b','fp-c','fp-pos','fp-brk'].forEach((id,i)=>document.getElementById(id).value=d[i]||''); }
 
 /* ===== LIVE BOARD ===== */
 function toggleBoard(){
@@ -672,6 +740,7 @@ function initWU(){
 }
 
 document.addEventListener('input',e=>{
+  if(e.target.id&&e.target.id.startsWith('fp-')){ saveFP(); renderFP(); }
   if(e.target.id==='cnum'){ const v=parseInt(e.target.value); CNT[LIFT]=isNaN(v)?null:Math.max(0,v); store('cnt',CNT); e.target.classList.toggle('set',CNT[LIFT]!==null); pace(); }
   if(e.target.classList.contains('kg')){refreshPlates();saveAttempts();renderForecast();}
   if(e.target.id==='rival'){ try{localStorage.setItem('susanW26_rival',e.target.value)}catch(_){} renderForecast(); }
@@ -689,6 +758,7 @@ renderForecast();
 renderCollar();
 document.getElementById('board-ext').href=BOARD_URL;
 syncCnum(); pace(); tickClock();
+restoreFP(); renderFP();
 </script>
 </body>
 </html>
