@@ -44,6 +44,14 @@
   #cnum{width:52px;font-size:22px;font-weight:800;text-align:center;font-variant-numeric:tabular-nums;background:var(--panel2);border:1px dashed var(--dim);border-radius:9px;padding:4px 0}
   #cnum.set{border:1px solid var(--line)}
   .clab{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);line-height:1.1}
+  .ctr-line{display:flex;align-items:stretch;gap:6px;margin-top:7px}
+  .ctr-line .take{flex:1;margin-top:0}
+  .mini-minus{display:none;font:inherit;font-size:15px;font-weight:800;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:0 12px;cursor:pointer}
+  .fold{font:inherit;font-size:12px;background:var(--panel2);border:1px solid var(--line);color:var(--dim);border-radius:8px;padding:0 10px;cursor:pointer}
+  .ctr.closed{padding-top:6px}
+  .ctr.closed .ctr-top{display:none}
+  .ctr.closed .ctr-line{margin-top:0}
+  .ctr.closed .mini-minus{display:block}
   .take{font-size:13px;font-weight:600;text-align:center;margin-top:7px;padding:6px 8px;border-radius:8px;background:var(--panel2);color:var(--dim)}
   .take.due{background:rgba(224,163,60,.16);color:var(--warn)}
   .take.late{background:rgba(224,99,90,.16);color:var(--stop)}
@@ -219,7 +227,11 @@
     <span class="clab">lifters<br>till up</span>
     <button class="cbtn plus" onclick="bump(1)">+1</button>
   </div>
-  <div class="take" id="take-line">Count the lifters before Susan, type it in the #. Tap &minus;1 each time the bar turns over.</div>
+  <div class="ctr-line">
+    <button class="mini-minus" onclick="bump(-1)">&minus;1</button>
+    <div class="take" id="take-line">Count the lifters before Susan, type it in the #. Tap &minus;1 each time the bar turns over.</div>
+    <button class="fold" id="ctr-fold" onclick="toggleCtr()" aria-label="Show or hide counter">&#9650;</button>
+  </div>
 </div>
 </div>
 
@@ -497,6 +509,13 @@ function toggleBoard(){
 /* ===== LIFTERS-UNTIL-UP COUNTER ===== */
 let LIFT = load('lift') || 'sq';
 let CNT = load('cnt') || {sq:null,bp:null,dl:null};
+function toggleCtr(force){
+  const el=document.querySelector('.ctr');
+  const closed = force===undefined ? !el.classList.contains('closed') : force;
+  el.classList.toggle('closed',closed);
+  document.getElementById('ctr-fold').innerHTML = closed?'&#9660;':'&#9650;';
+  store('ctrclosed',closed); renderTake();
+}
 function setLift(k){ LIFT=k; store('lift',k); syncCnum(); pace(); tickClock(); }
 function bump(d){
   const cur=CNT[LIFT];
@@ -527,7 +546,9 @@ function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;',
 function renderTake(){
   const el=document.getElementById('take-line');
   el.className='take';
-  const cnt=CNT[LIFT], tag='<b>'+({sq:'SQUAT',bp:'BENCH',dl:'DEADLIFT'})[LIFT]+'</b> · ';
+  const cnt=CNT[LIFT], folded=document.querySelector('.ctr').classList.contains('closed');
+  const tag='<b>'+({sq:'SQ',bp:'BP',dl:'DL'})[LIFT]+(folded&&cnt!==null?' '+cnt+' out':'')+'</b> · ';
+  if(cnt===null&&folded){ el.innerHTML=tag+'counter not set'; return; }
   if(cnt===null){ el.innerHTML='Count the lifters before Susan, type it in the #. Tap &minus;1 each time the bar turns over.'; return; }
   if(cnt===0){ el.classList.add('up'); el.innerHTML=tag+'SUSAN IS UP.'; return; }
   const rows=[...document.querySelectorAll('.lift[data-lift="'+LIFT+'"] .wu-row')];
@@ -779,7 +800,7 @@ renderForecast();
 renderCollar();
 document.getElementById('board-ext').href=BOARD_URL;
 syncCnum(); pace(); tickClock();
-restoreFP(); renderFP(); toggleFP(!!load('fpclosed'));
+restoreFP(); renderFP(); toggleFP(!!load('fpclosed')); toggleCtr(!!load('ctrclosed'));
 </script>
 </body>
 </html>
