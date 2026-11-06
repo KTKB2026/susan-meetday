@@ -463,7 +463,6 @@ function clockTap(){
   clockStart=Date.now(); store('ckstart',clockStart); tickClock();
 }
 function clockReset(){
-  if(!confirm('Reset the session clock to 0:00?')) return;
   clockStart=null; store('ckstart',null); tickClock();
 }
 function lastSetStamp(){
