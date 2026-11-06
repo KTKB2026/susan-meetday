@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Susan — Meet Day · Jun 10 2026</title>
+<style>
+  :root{
+    --ink:#0e1116; --panel:#171c24; --panel2:#1f2630; --line:#2c3540;
+    --text:#e8ebef; --dim:#8b95a3;
+    --sq:#e0a33c; --bp:#5fb4e6; --dl:#e0635a;
+    --good:#4cc38a; --warn:#e0a33c; --stop:#e0635a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{background:var(--ink);color:var(--text);font-family:-apple-system,"SF Pro Text",Inter,system-ui,sans-serif;font-size:16px;line-height:1.45;padding:16px 14px 60px;max-width:560px;margin:0 auto}
+  header{margin-bottom:12px}
+  .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;margin-bottom:6px}
+  h1{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.05}
+  .sub{color:var(--dim);font-size:13px;margin-top:5px}
+  .hint{font-size:11px;color:var(--dim);text-align:center;margin:0 0 14px}
+
+  input{font-family:inherit;color:var(--text);background:transparent;border:none;outline:none}
+  input:focus{background:rgba(255,255,255,.07);border-radius:4px}
+
+  /* ATTEMPT CLOCK — sticky */
+  .clock{
+    position:sticky;top:8px;z-index:50;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    display:flex;align-items:center;gap:12px;
+    padding:10px 14px;margin-bottom:14px;
+    box-shadow:0 6px 18px rgba(0,0,0,.45);
+    cursor:pointer;user-select:none;
+  }
+  .clock .cl-lab{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);line-height:1.3}
+  .clock .cl-time{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;margin-left:auto}
+  .clock.run{border-color:var(--good)} .clock.run .cl-time{color:var(--good)}
+  .clock.low{border-color:var(--warn)} .clock.low .cl-time{color:var(--warn)}
+  .clock.crit{border-color:var(--stop);animation:pulse .6s infinite alternate} .clock.crit .cl-time{color:var(--stop)}
+  @keyframes pulse{from{box-shadow:0 0 0 0 rgba(224,99,90,.0)}to{box-shadow:0 0 0 5px rgba(224,99,90,.22)}}
+  .clock .cl-hint{font-size:10px;color:var(--dim)}
+
+  .lift{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-bottom:0;overflow:hidden}
+  .lift-head{display:flex;justify-content:space-between;align-items:baseline;padding:12px 14px 8px}
+  .lift-name{font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+  .lift.sq .lift-name{color:var(--sq)} .lift.bp .lift-name{color:var(--bp)} .lift.dl .lift-name{color:var(--dl)}
+  .lift-ref{font-size:11px;color:var(--dim)}
+  .attempts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--line)}
+  .att{background:var(--panel2);padding:10px 4px 8px;text-align:center}
+  .att .lab{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+  .att input.kg{width:100%;font-size:27px;font-weight:800;text-align:center;font-variant-numeric:tabular-nums;letter-spacing:-.02em;margin:2px 0;padding:2px 0}
+  .att .plates{font-size:10px;color:var(--dim);font-variant-numeric:tabular-nums;min-height:13px}
+  .att .mark{font-size:11px;font-weight:700;margin-top:6px;padding:5px 0;border-radius:6px;border:1px solid var(--line);color:var(--dim);cursor:pointer;user-select:none}
+  .att.good{background:rgba(76,195,138,.13)} .att.good .mark{color:var(--good);border-color:var(--good)}
+  .att.miss{background:rgba(224,99,90,.13)} .att.miss .mark{color:var(--stop);border-color:var(--stop)}
+  .strategy{padding:10px 14px;font-size:13px;color:#c2c9d2;border-top:1px solid var(--line)}
+  .strategy b{color:var(--text)}
+
+  .strip{background:var(--panel2);border:1px solid var(--line);border-top:none;border-bottom:none;margin:0 12px;padding:10px 12px 12px}
+  .strip-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .strip-title{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .strip-live{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}
+  .strip-live small{font-size:10px;font-weight:600;color:var(--dim);letter-spacing:.08em}
+  .scen{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+  .scen .s{background:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 4px;text-align:center}
+  .scen .s .sl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+  .scen .s .sv{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
+  .scen .s.dead{opacity:.35}
+
+  .chase{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px}
+  .chase-head{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+  .chase-in{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+  .chase-in label{font-size:13px;color:var(--dim);flex:1}
+  .chase-in input{background:var(--panel2);border:1px solid var(--line);border-radius:8px;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;width:110px;padding:6px 10px;text-align:center}
+  .chase-out{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .chase-out .c{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;text-align:center}
+  .chase-out .cl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+  .chase-out .cv{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;margin-top:2px}
+  .chase-out .cn{font-size:10px;color:var(--dim);margin-top:2px;min-height:12px}
+  .cv.feas{color:var(--good)} .cv.tight{color:var(--warn)} .cv.nope{color:var(--stop)}
+  .chase-note{font-size:11px;color:var(--dim);margin-top:8px}
+
+  /* warm-up */
+  .wu{border-top:1px solid var(--line)}
+  .wu-toggle{width:100%;background:none;border:none;color:var(--dim);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:11px 14px;text-align:left;cursor:pointer;display:flex;justify-content:space-between;font-family:inherit}
+  .wu-body{display:none;padding:0 14px 12px}
+  .wu.open .wu-body{display:block}
+  .wu-calc{
+    background:var(--ink);border:1px solid var(--line);border-radius:10px;
+    padding:10px;margin-bottom:10px;
+  }
+  .wu-calc .wc-title{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+  .wu-calc .wc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+  .wu-calc .wc-field label{display:block;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:3px}
+  .wu-calc .wc-field input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:7px;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;padding:6px;text-align:center}
+  .wu-calc .wc-out{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .wu-calc .wc-opener{font-size:13px;color:var(--dim)}
+  .wu-calc .wc-opener b{color:var(--text);font-size:16px;font-variant-numeric:tabular-nums}
+  .wu-calc button{background:var(--panel2);border:1px solid var(--line);color:var(--text);font-size:12px;font-weight:700;border-radius:8px;padding:7px 12px;cursor:pointer;font-family:inherit}
+  .wu-cols{display:grid;grid-template-columns:52px 1fr 70px 56px 30px;gap:8px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:4px 0 6px}
+  .wu-row{display:grid;grid-template-columns:52px 1fr 70px 56px 30px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .wu-row:last-of-type{border-bottom:none}
+  .wu-row .n{color:var(--dim);font-size:12px;font-variant-numeric:tabular-nums}
+  .wu-row .n.stamped{color:var(--good);font-weight:700}
+  .wu-row input{font-size:15px;font-variant-numeric:tabular-nums;padding:4px 6px;background:var(--panel2);border-radius:6px;width:100%}
+  .wu-row input.reps{text-align:center}
+  .wu-row .chk{width:26px;height:26px;border:1px solid var(--line);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:transparent;font-size:14px;font-weight:800}
+  .wu-row .chk.on{color:var(--good);border-color:var(--good);background:rgba(76,195,138,.12)}
+  .wu-add{margin-top:10px;background:var(--panel2);border:1px dashed var(--line);color:var(--dim);font-size:13px;border-radius:8px;padding:8px;width:100%;cursor:pointer;font-family:inherit}
+
+  h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin:26px 0 10px;display:flex;align-items:center;gap:10px}
+  h2::after{content:"";flex:1;height:1px;background:var(--line)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:4px 14px;margin-bottom:12px}
+  .row{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .row:last-child{border-bottom:none}
+  .row .k{color:var(--dim);flex-shrink:0}
+  .row .v{text-align:right;font-variant-numeric:tabular-nums}
+  .pain .v{font-weight:600}
+  .ok{color:var(--good)} .cau{color:var(--warn)} .halt{color:var(--stop)}
+  .note{font-size:13px;color:#c2c9d2;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:10px;padding:10px 12px;margin-bottom:12px}
+  .note.red{border-left-color:var(--stop)}
+  .gap{height:14px}
+
+  .hist-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+  table{border-collapse:collapse;font-size:12px;white-space:nowrap;width:100%}
+  th{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel)}
+  td{padding:8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+  tr:last-child td{border-bottom:none}
+  td.meet{max-width:130px;white-space:normal;line-height:1.25}
+  td.mk{color:var(--good)} td.ms{color:var(--stop)}
+  td.tot{font-weight:700}
+  .hist-note{font-size:11px;color:var(--dim);margin-top:8px}
+  footer{margin-top:30px;font-size:11px;color:var(--dim);text-align:center}
+</style>
+</head>
+<body>
+<div style="background:#2c3540;color:#e8ebef;font-size:12px;text-align:center;padding:8px;border-radius:8px;margin-bottom:12px">Archived card: USAPL Masters Nationals, Jun 10 2026. <a href="../../" style="color:#e0a33c">Current card</a></div>
+
+<header>
+  <div class="eyebrow"><span>MASS Strength</span><span>★ Meet Day</span></div>
+  <h1>Susan — Nationals</h1>
+  <div class="sub">June 10, 2026 · Masters · Best total 230 (Nov 2024) · Last meet 200 @ -65 (Nov 2025)</div>
+</header>
+
+<!-- ATTEMPT CLOCK -->
+<div class="clock" id="clock" onclick="clockTap()">
+  <div>
+    <div class="cl-lab">Attempt Clock</div>
+    <div class="cl-hint" id="cl-hint">Tap to start 1:00 · tap again to reset</div>
+  </div>
+  <div class="cl-time" id="cl-time">1:00</div>
+</div>
+
+<div class="hint">Tap a weight to edit. Tap the pill to mark good / miss / clear. Subtotals and forecasts update live.</div>
+
+<!-- SQUAT -->
+<div class="lift sq" data-lift="sq" style="border-radius:14px 14px 0 0">
+  <div class="lift-head"><span class="lift-name">Squat</span><span class="lift-ref">e1RM 47.5 · knee-limited</span></div>
+  <div class="attempts">
+    <div class="att"><div class="lab">Opener</div><input class="kg" inputmode="decimal" value="40"><div class="plates"></div><div class="mark" onclick="cycle(this)">SET</div></div>
+    <div class="att"><div class="lab">2nd</div><input class="kg" inputmode="decimal" value="45"><div class="plates"></div><div class="mark" onclick="cycle(this)">SET</div></div>
+    <div class="att"><div class="lab">3rd</div><input class="kg" inputmode="decimal" value="47.5"><div class="plates"></div><div class="mark" onclick="cycle(this)">SET</div></div>
+  </div>
+  <div class="strategy"><b>Total the meet.</b> Opener = something she makes on a bad knee day. Take the 3rd <b>only</b> if 1st and 2nd are clean and the knee is stable.</div>
+  <div class="wu"><button class="wu-toggle" onclick="this.parentNode.classList.toggle('open')"><span>Warm-up flow</span><span>▾</span></button>
+    <div class="wu-body">
+      <div class="wu-calc">
+        <div class="wc-title">Back-calc warm-up times</div>
+        <div class="wc-grid">
+          <div class="wc-field"><label>Flight starts</label><input class="fstart" type="time"></div>
+          <div class="wc-field"><label>Her position</label><input class="fpos" inputmode="numeric" placeholder="#"></div>
+          <div class="wc-field"><label>Lifters in flight</label><input class="fsize" inputmode="numeric" placeholder="#"></div>
+        </div>
+        <div class="wc-out">
+          <div class="wc-opener">Est. opener: <b class="otime">—</b></div>
+          <button onclick="stampTimes(this)">Stamp times</button>
+        </div>
+      </div>
+      <div class="wu-cols"><span>Time</span><span>Set</span><span>kg</span><span>Reps</span><span></span></div><div class="wu-list"></div><button class="wu-add" onclick="addRow(this)">+ Add warm-up set</button>
+    </div>
+  </div>
+</div>
+
+<div class="strip" id="strip-sq">
+  <div class="strip-head"><span class="strip-title">Subtotal after squat</span><span class="strip-live" id="sub-sq">—</span></div>
+  <div class="scen" id="scen-sq"></div>
+</div>
+
+<!-- BENCH -->
+<div class="lift bp" data-lift="bp" style="border-radius:0">
+  <div class="lift-head"><span class="lift-name">Bench</span><span class="lift-ref">e1RM 47.5 · PR hunt</span></div>
+  <div class="attempts">
+    <div class="att"><div class="lab">Opener</div><input class="kg" inputmode="decimal" value="42.5"><div class="plates"></div><div class="mark" onclick="cycle(this)">SET</div></div>
+    <div class="att"><div class="lab">2nd</div><input class="kg" inputmode="decimal" value="45"><div class="plates"></div><div class="mark" onclick="cycle(this)">SET</div></div>
+    <div class="att"><div class="lab">3rd</div><input class="kg" inputmode="decimal" value="47.5"><div class="plates"></div><div class="mark" onclick="cycle(this)">SET</div></div>
+  </div>
+  <div class="strategy"><b>PR hunt.</b> 2nd matches the Nov PR (45). 3rd = lifetime PR 47.5 — missed at 4 meets, made once. Strict commands, no soft lockout.</div>
+  <div class="wu"><button class="wu-toggle" onclick="this.parentNode.classList.toggle('open')"><span>Warm-up flow</span><span>▾</span></button>
+    <div class="wu-body">
+      <div class="wu-calc">
+        <div class="wc-title">Back-calc warm-up times</div>
+        <div class="wc-grid">
+          <div class="wc-field"><label>Flight starts</label><input class="fstart" type="time"></div>
+          <div class="wc-field"><label>Her position</label><input class="fpos" inputmode="numeric" placeholder="#"></div>
+          <div class="wc-field"><label>Lifters in flight</label><input class="fsize" inputmode="numeric" placeholder="#"></div>
+        </div>
+        <div class="wc-out">
+          <div class="wc-opener">Est. opener: <b class="otime">—</b></div>
+          <button onclick="stampTimes(this)">Stamp times</button>
+        </div>
+      </div>
+      <div class="wu-cols"><span>Time</span><span>Set</span><span>kg</span><span>Reps</span><span></span></div><div class="wu-list"></div><button class="wu-add" onclick="addRow(this)">+ Add warm-up set</button>
+    </div>
+  </div>
+</div>
+
+<div class="strip" id="strip-bp">
+  <div class="strip-head"><span class="strip-title">Subtotal after bench · forecast w/ deadlift</span><span class="strip-live" id="sub-bp">—</span></div>
+  <div class="scen" id="scen-bp"></div>
+</div>
+
+<!-- DEADLIFT -->
+<div class="lift dl" data-lift="dl" style="border-radius:0 0 14px 14px;margin-bottom:14px">
+  <div class="lift-head"><span class="lift-name">Deadlift</span><span class="lift-ref">e1RM 105 · watch L hip</span></div>
+  <div class="attempts">
+    <div class="att"><div class="lab">Opener</div><input class="kg" inputmode="decimal" value="95"><div class="plates"></div><div class="mark" onclick="cycle(this)">SET</div></div>
+    <div class="att"><div class="lab">2nd</div><input class="kg" inputmode="decimal" value="102.5"><div class="plates"></div><div class="mark" onclick="cycle(this)">SET</div></div>
+    <div class="att"><div class="lab">3rd</div><input class="kg" inputmode="decimal" value="107.5"><div class="plates"></div><div class="mark" onclick="cycle(this)">SET</div></div>
+  </div>
+  <div class="strategy"><b>2nd is the PR target.</b> If 2nd speed is right, <b>110</b> (lifetime PR) is on the table for the 3rd. If the 2nd slows badly, pass the 3rd or cap at 105. <span id="final-line"></span></div>
+  <div class="wu"><button class="wu-toggle" onclick="this.parentNode.classList.toggle('open')"><span>Warm-up flow</span><span>▾</span></button>
+    <div class="wu-body">
+      <div class="wu-calc">
+        <div class="wc-title">Back-calc warm-up times</div>
+        <div class="wc-grid">
+          <div class="wc-field"><label>Flight starts</label><input class="fstart" type="time"></div>
+          <div class="wc-field"><label>Her position</label><input class="fpos" inputmode="numeric" placeholder="#"></div>
+          <div class="wc-field"><label>Lifters in flight</label><input class="fsize" inputmode="numeric" placeholder="#"></div>
+        </div>
+        <div class="wc-out">
+          <div class="wc-opener">Est. opener: <b class="otime">—</b></div>
+          <button onclick="stampTimes(this)">Stamp times</button>
+        </div>
+      </div>
+      <div class="wu-cols"><span>Time</span><span>Set</span><span>kg</span><span>Reps</span><span></span></div><div class="wu-list"></div><button class="wu-add" onclick="addRow(this)">+ Add warm-up set</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHASE CALC -->
+<div class="chase">
+  <div class="chase-head">Placement chase calc</div>
+  <div class="chase-in">
+    <label>Rival's total (or projected total) to beat:</label>
+    <input id="rival" inputmode="decimal" placeholder="e.g. 215">
+  </div>
+  <div class="chase-out">
+    <div class="c"><div class="cl">DL to match</div><div class="cv" id="need-match">—</div><div class="cn" id="note-match"></div></div>
+    <div class="c"><div class="cl">DL to beat (+2.5)</div><div class="cv" id="need-beat">—</div><div class="cn" id="note-beat"></div></div>
+  </div>
+  <div class="chase-note">Uses the live subtotal (best good SQ + BP; falls back to planned 2nd attempts if nothing is marked yet). Equal total = lighter bodyweight wins, so "match" is enough if Susan weighed in lighter. Color: green = at/under her lifetime PR 110, amber = 110–112.5, red = beyond.</div>
+</div>
+
+<h2>Knee Pain Rule — Squats</h2>
+<div class="card pain">
+  <div class="row"><span class="k">0–2 / 10</span><span class="v ok">Continue as planned</span></div>
+  <div class="row"><span class="k">3 / 10</span><span class="v cau">Continue — no load jump</span></div>
+  <div class="row"><span class="k">4 / 10</span><span class="v cau">Reduce ROM / conservative call</span></div>
+  <div class="row"><span class="k">5+ / sharp / swelling / instability</span><span class="v halt">STOP squatting</span></div>
+</div>
+
+<h2>Left Hip — Deadlift</h2>
+<div class="note red">THA hip. Valgus collapse shows up at <b>90kg+</b>. Watch the wedge on every warm-up above 90 — if the hip caves mid-pull on the 2nd, the 3rd drops or gets passed.</div>
+
+<h2>Meet History</h2>
+<div class="hist-wrap">
+<table>
+<thead><tr><th>Date</th><th>Meet</th><th>Pl.</th><th>Div</th><th>Class</th><th>BW</th><th colspan="3">Squat</th><th colspan="3">Bench</th><th colspan="3">Deadlift</th><th>Total</th><th>Pts</th></tr></thead>
+<tbody>
+<tr><td>11/22/25</td><td class="meet">MA State Championships</td><td>1</td><td>R-M4</td><td>-65</td><td>62.50</td><td class="mk">40</td><td class="mk">45</td><td class="mk">50</td><td class="mk">37.5</td><td class="mk">42.5</td><td class="ms">47.5</td><td class="mk">95</td><td class="mk">100</td><td class="mk">107.5</td><td class="tot">200</td><td>216.15</td></tr>
+<tr><td>06/26/25</td><td class="meet">Raw Nationals</td><td>1</td><td>R-M4</td><td>-65</td><td>61.45</td><td class="mk">50</td><td class="mk">57.5</td><td class="mk">65</td><td class="mk">40</td><td class="ms">45</td><td class="mk">45</td><td class="mk">92.5</td><td class="mk">102.5</td><td class="ms">105</td><td class="tot">212.5</td><td>232.07</td></tr>
+<tr><td>11/23/24</td><td class="meet">MA State Championships</td><td>1</td><td>R-M4</td><td>-67.5</td><td>60.80</td><td class="mk">65</td><td class="mk">72.5</td><td class="ms">77.5</td><td class="mk">40</td><td class="mk">45</td><td class="mk">47.5</td><td class="mk">95</td><td class="mk">102.5</td><td class="mk">110</td><td class="tot">230</td><td>252.85</td></tr>
+<tr><td>11/23/24</td><td class="meet">MA State Championships</td><td>6</td><td>R-O</td><td>-67.5</td><td>60.80</td><td class="mk">65</td><td class="mk">72.5</td><td class="ms">77.5</td><td class="mk">40</td><td class="mk">45</td><td class="mk">47.5</td><td class="mk">95</td><td class="mk">102.5</td><td class="mk">110</td><td class="tot">230</td><td>252.85</td></tr>
+<tr><td>08/03/24</td><td class="meet">Urban Powerhouse Open</td><td>1</td><td>R-M4B</td><td>-67.5</td><td>61.00</td><td class="mk">60</td><td class="ms">65</td><td class="mk">70</td><td class="mk">40</td><td class="mk">42.5</td><td class="mk">45</td><td class="mk">90</td><td class="mk">97.5</td><td class="mk">105</td><td class="tot">220</td><td>241.36</td></tr>
+<tr><td>08/03/24</td><td class="meet">Urban Powerhouse Open</td><td>5</td><td>R-O</td><td>-67.5</td><td>61.00</td><td class="mk">60</td><td class="ms">65</td><td class="mk">70</td><td class="mk">40</td><td class="mk">42.5</td><td class="mk">45</td><td class="mk">90</td><td class="mk">97.5</td><td class="mk">105</td><td class="tot">220</td><td>241.36</td></tr>
+<tr><td>11/18/23</td><td class="meet">MA State Championships</td><td>1</td><td>R-M4</td><td>-67.5</td><td>63.50</td><td class="mk">60</td><td class="mk">67.5</td><td class="mk">75</td><td class="mk">42.5</td><td class="mk">45</td><td class="ms">47.5</td><td class="mk">92.5</td><td class="mk">100</td><td class="mk">107.5</td><td class="tot">227.5</td><td>243.51</td></tr>
+<tr><td>11/18/23</td><td class="meet">MA State Championships</td><td>11</td><td>R-O</td><td>-67.5</td><td>63.50</td><td class="mk">60</td><td class="mk">67.5</td><td class="mk">75</td><td class="mk">42.5</td><td class="mk">45</td><td class="ms">47.5</td><td class="mk">92.5</td><td class="mk">100</td><td class="mk">107.5</td><td class="tot">227.5</td><td>243.51</td></tr>
+<tr><td>09/14/23</td><td class="meet">Raw Nationals</td><td>1</td><td>R-M4</td><td>-67.5</td><td>62.09</td><td class="mk">60</td><td class="mk">67.5</td><td class="mk">75</td><td class="mk">42.5</td><td class="mk">45</td><td class="ms">47.5</td><td class="mk">92.5</td><td class="mk">100</td><td class="mk">107.5</td><td class="tot">227.5</td><td>246.87</td></tr>
+<tr><td>05/06/23</td><td class="meet">MA Ladies of Iron</td><td>1</td><td>R-M4</td><td>-67.5</td><td>63.20</td><td class="mk">60</td><td class="mk">65</td><td class="mk">72.5</td><td class="mk">42.5</td><td class="mk">45</td><td class="ms">47.5</td><td class="mk">90</td><td class="mk">100</td><td class="mk">107.5</td><td class="tot">225</td><td>241.52</td></tr>
+<tr><td>05/06/23</td><td class="meet">United Ladies of Iron</td><td>1</td><td>R-M4</td><td>-67.5</td><td>63.20</td><td class="mk">60</td><td class="mk">65</td><td class="mk">72.5</td><td class="mk">42.5</td><td class="mk">45</td><td class="ms">47.5</td><td class="mk">90</td><td class="mk">100</td><td class="mk">107.5</td><td class="tot">225</td><td>241.52</td></tr>
+</tbody>
+</table>
+</div>
+<div class="hist-note">Green = good lift, red = miss. Bench 47.5: missed at 4 meets, made once (Nov 2024). DL 107.5 made 5x, 110 made once. Best total 230 @ -67.5.</div>
+
+<h2>Reference Numbers</h2>
+<div class="card">
+  <div class="row"><span class="k">SQ e1RM / lifetime / Nov '25</span><span class="v">47.5 · 75 · 50</span></div>
+  <div class="row"><span class="k">BP e1RM / lifetime / Nov '25</span><span class="v">47.5 · 47.5 · 45</span></div>
+  <div class="row"><span class="k">DL e1RM / lifetime / Nov '25</span><span class="v">105 · 110 · 107.5</span></div>
+  <div class="row"><span class="k">May 28 test single</span><span class="v">DL 102.5 (planned 2nd) — 13 days out</span></div>
+</div>
+
+<footer>Plate math assumes a 20kg bar, collars not counted. Edits, marks, and stamped times persist on this device when the file is opened in a browser.</footer>
+
+<script>
+const DEFAULT_WU = {
+  sq: [["Empty bar",20,5],["Warm-up",25,3],["Warm-up",30,2],["Warm-up",35,1],["Last warm-up",37.5,1]],
+  bp: [["Empty bar",20,5],["Warm-up",27.5,3],["Warm-up",32.5,2],["Warm-up",37.5,1],["Last warm-up",40,1]],
+  dl: [["Warm-up",40,5],["Warm-up",60,3],["Warm-up",75,2],["Warm-up",85,1],["Last warm-up",90,1]]
+};
+const LAST_WU_BEFORE_OPENER = 8;   // minutes
+const SPACING = 5;                  // minutes between warm-up sets
+
+function store(k,v){ try{localStorage.setItem('susan_'+k,JSON.stringify(v))}catch(e){} }
+function load(k){ try{const v=localStorage.getItem('susan_'+k);return v?JSON.parse(v):null}catch(e){return null} }
+function f(n){ return (+n).toFixed(1).replace(/\.0$/,''); }
+function plateText(kg){
+  const n=parseFloat(kg);
+  if(isNaN(n)||n<20) return '';
+  return ((n-20)/2).toFixed(2).replace(/\.?0+$/,'')+' / side';
+}
+
+/* ===== ATTEMPT CLOCK ===== */
+let clockInt=null, clockEnd=0;
+function clockTap(){
+  const c=document.getElementById('clock');
+  if(clockInt){ stopClock(); return; }
+  clockEnd=Date.now()+60000;
+  c.classList.add('run');
+  document.getElementById('cl-hint').textContent='Running — tap to reset';
+  clockInt=setInterval(tickClock,100);
+  tickClock();
+}
+function stopClock(){
+  clearInterval(clockInt); clockInt=null;
+  const c=document.getElementById('clock');
+  c.classList.remove('run','low','crit');
+  document.getElementById('cl-time').textContent='1:00';
+  document.getElementById('cl-hint').textContent='Tap to start 1:00 · tap again to reset';
+}
+function tickClock(){
+  const c=document.getElementById('clock');
+  const left=Math.max(0,clockEnd-Date.now());
+  const s=Math.ceil(left/1000);
+  document.getElementById('cl-time').textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+  c.classList.toggle('low',s<=20&&s>10);
+  c.classList.toggle('crit',s<=10);
+  if(left<=0){
+    document.getElementById('cl-time').textContent='0:00';
+    if(navigator.vibrate) navigator.vibrate([200,100,200]);
+    clearInterval(clockInt); clockInt=null;
+    document.getElementById('cl-hint').textContent='TIME — tap to reset';
+  }
+}
+
+/* ===== WARM-UP BACK-CALCULATOR ===== */
+function fmtTime(d){
+  let h=d.getHours(), m=d.getMinutes();
+  const ap=h>=12?'p':'a'; h=h%12||12;
+  return h+':'+String(m).padStart(2,'0')+ap;
+}
+function calcOpener(calcEl){
+  const t=calcEl.querySelector('.fstart').value;
+  const pos=parseInt(calcEl.querySelector('.fpos').value);
+  if(!t) return null;
+  const [hh,mm]=t.split(':').map(Number);
+  const d=new Date(); d.setHours(hh,mm,0,0);
+  if(!isNaN(pos)&&pos>1) d.setMinutes(d.getMinutes()+(pos-1)); // ~1 min per lifter
+  return d;
+}
+function updateOpenerLabel(calcEl){
+  const d=calcOpener(calcEl);
+  calcEl.querySelector('.otime').textContent = d?fmtTime(d):'—';
+}
+function stampTimes(btn){
+  const calcEl=btn.closest('.wu-calc');
+  const d=calcOpener(calcEl);
+  if(!d){ calcEl.querySelector('.otime').textContent='set flight time'; return; }
+  const list=calcEl.parentNode.querySelector('.wu-list');
+  const rows=[...list.children];
+  const n=rows.length;
+  rows.forEach((row,i)=>{
+    const t=new Date(d);
+    t.setMinutes(t.getMinutes() - LAST_WU_BEFORE_OPENER - SPACING*(n-1-i));
+    const cell=row.querySelector('.n');
+    cell.textContent=fmtTime(t);
+    cell.classList.add('stamped');
+  });
+  updateOpenerLabel(calcEl);
+  saveWU(); saveFlights();
+}
+function saveFlights(){
+  const data={};
+  document.querySelectorAll('.lift[data-lift]').forEach(l=>{
+    const c=l.querySelector('.wu-calc');
+    data[l.dataset.lift]=[c.querySelector('.fstart').value,c.querySelector('.fpos').value,c.querySelector('.fsize').value];
+  });
+  store('flights',data);
+}
+function restoreFlights(){
+  const data=load('flights'); if(!data) return;
+  document.querySelectorAll('.lift[data-lift]').forEach(l=>{
+    const arr=data[l.dataset.lift]; if(!arr) return;
+    const c=l.querySelector('.wu-calc');
+    c.querySelector('.fstart').value=arr[0]||'';
+    c.querySelector('.fpos').value=arr[1]||'';
+    c.querySelector('.fsize').value=arr[2]||'';
+    updateOpenerLabel(c);
+  });
+}
+
+/* ===== ATTEMPTS / FORECAST ===== */
+function liftState(key){
+  const l=document.querySelector('.lift[data-lift="'+key+'"]');
+  return [...l.querySelectorAll('.att')].map(a=>({
+    kg:parseFloat(a.querySelector('.kg').value)||0,
+    st:a.classList.contains('good')?'g':a.classList.contains('miss')?'m':''
+  }));
+}
+function bestGood(atts){ return Math.max(0,...atts.filter(a=>a.st==='g').map(a=>a.kg)); }
+function anyMarked(atts){ return atts.some(a=>a.st!==''); }
+function liveOrPlanned(atts){
+  if(anyMarked(atts)) return {val:bestGood(atts), live:true};
+  return {val:atts[1]?atts[1].kg:0, live:false};
+}
+function renderForecast(){
+  const sq=liftState('sq'), bp=liftState('bp'), dl=liftState('dl');
+  const labs=['Opener','2nd','3rd'];
+  const sqRes=liveOrPlanned(sq);
+  document.getElementById('sub-sq').innerHTML = f(sqRes.val)+' <small>'+(sqRes.live?'LIVE':'PROJ (2nd)')+'</small>';
+  document.getElementById('scen-sq').innerHTML = bp.map((a,i)=>
+    '<div class="s'+(a.st==='m'?' dead':'')+'"><div class="sl">+BP '+labs[i]+'</div><div class="sv">'+f(sqRes.val+a.kg)+'</div></div>').join('');
+  const bpRes=liveOrPlanned(bp);
+  const sub2=sqRes.val+bpRes.val;
+  document.getElementById('sub-bp').innerHTML = f(sub2)+' <small>'+((sqRes.live&&bpRes.live)?'LIVE':'PROJ')+'</small>';
+  document.getElementById('scen-bp').innerHTML = dl.map((a,i)=>
+    '<div class="s'+(a.st==='m'?' dead':'')+'"><div class="sl">+DL '+labs[i]+' → TOTAL</div><div class="sv">'+f(sub2+a.kg)+'</div></div>').join('');
+  const dlBest=bestGood(dl);
+  document.getElementById('final-line').innerHTML = dlBest>0 ? ' <b>Current total: '+f(sub2+dlBest)+'</b>' : '';
+  const rival=parseFloat(document.getElementById('rival').value);
+  const mEl=document.getElementById('need-match'), bEl=document.getElementById('need-beat');
+  const mN=document.getElementById('note-match'), bN=document.getElementById('note-beat');
+  if(!isNaN(rival)&&rival>0){ paint(mEl,mN,rival-sub2); paint(bEl,bN,rival+2.5-sub2); }
+  else { mEl.textContent='—'; bEl.textContent='—'; mN.textContent=''; bN.textContent=''; mEl.className='cv'; bEl.className='cv'; }
+}
+function paint(el,note,need){
+  if(need<=0){ el.textContent='✓ done'; el.className='cv feas'; note.textContent='Subtotal already covers it'; return; }
+  el.textContent=f(need)+' kg';
+  if(need<=110){ el.className='cv feas'; note.textContent= need<=107.5?'Inside her proven range':'Lifetime PR territory (110)'; }
+  else if(need<=112.5){ el.className='cv tight'; note.textContent='Beyond lifetime PR — coach call'; }
+  else { el.className='cv nope'; note.textContent='Out of range today'; }
+}
+function cycle(el){
+  const att=el.parentNode;
+  if(att.classList.contains('good')){att.classList.remove('good');att.classList.add('miss');el.textContent='✗ MISS';}
+  else if(att.classList.contains('miss')){att.classList.remove('miss');el.textContent='SET';}
+  else{att.classList.add('good');el.textContent='✓ GOOD';}
+  saveAttempts(); renderForecast();
+}
+function saveAttempts(){
+  const data={};
+  document.querySelectorAll('.lift[data-lift]').forEach(l=>{
+    data[l.dataset.lift]=[...l.querySelectorAll('.att')].map(a=>({
+      kg:a.querySelector('.kg').value,
+      st:a.classList.contains('good')?'g':a.classList.contains('miss')?'m':''
+    }));
+  });
+  store('attempts',data);
+}
+function restoreAttempts(){
+  const data=load('attempts'); if(!data) return;
+  document.querySelectorAll('.lift[data-lift]').forEach(l=>{
+    const arr=data[l.dataset.lift]; if(!arr) return;
+    l.querySelectorAll('.att').forEach((a,i)=>{
+      if(!arr[i])return;
+      a.querySelector('.kg').value=arr[i].kg;
+      const m=a.querySelector('.mark');
+      a.classList.remove('good','miss');
+      if(arr[i].st==='g'){a.classList.add('good');m.textContent='✓ GOOD';}
+      else if(arr[i].st==='m'){a.classList.add('miss');m.textContent='✗ MISS';}
+      else m.textContent='SET';
+    });
+  });
+}
+function refreshPlates(){
+  document.querySelectorAll('.att').forEach(a=>{
+    a.querySelector('.plates').textContent=plateText(a.querySelector('.kg').value);
+  });
+}
+
+/* ===== WARM-UP ROWS ===== */
+function makeRow(list,name,kg,reps,done,time){
+  const i=list.children.length+1;
+  const row=document.createElement('div');
+  row.className='wu-row';
+  const n=document.createElement('span');
+  n.className='n'+(time?' stamped':'');
+  n.textContent=time||i;
+  n.ondblclick=()=>{row.remove();renumber(list);saveWU();};
+  row.appendChild(n);
+  ['set','wkg','reps'].forEach((cls,idx)=>{
+    const inp=document.createElement('input');
+    inp.className=cls;
+    if(cls!=='set') inp.inputMode = cls==='wkg'?'decimal':'numeric';
+    inp.value=[name,kg,reps][idx];
+    inp.addEventListener('input',saveWU);
+    row.appendChild(inp);
+  });
+  const chk=document.createElement('div');
+  chk.className='chk'+(done?' on':''); chk.textContent='✓';
+  chk.onclick=()=>{chk.classList.toggle('on');saveWU();};
+  row.appendChild(chk);
+  list.appendChild(row);
+}
+function renumber(list){[...list.children].forEach((r,i)=>{const n=r.querySelector('.n'); if(!n.classList.contains('stamped')) n.textContent=i+1;});}
+function addRow(btn){ makeRow(btn.parentNode.querySelector('.wu-list'),'Warm-up','','',false,null); saveWU(); }
+function saveWU(){
+  const data={};
+  document.querySelectorAll('.lift[data-lift]').forEach(l=>{
+    data[l.dataset.lift]=[...l.querySelectorAll('.wu-row')].map(r=>{
+      const n=r.querySelector('.n');
+      return [r.querySelector('.set').value, r.querySelector('.wkg').value,
+              r.querySelector('.reps').value, r.querySelector('.chk').classList.contains('on'),
+              n.classList.contains('stamped')?n.textContent:null];
+    });
+  });
+  store('wu',data);
+}
+function initWU(){
+  const saved=load('wu');
+  document.querySelectorAll('.lift[data-lift]').forEach(l=>{
+    const key=l.dataset.lift, list=l.querySelector('.wu-list');
+    const rows=(saved&&saved[key]&&saved[key].length)?saved[key]:DEFAULT_WU[key].map(r=>[r[0],r[1],r[2],false,null]);
+    rows.forEach(r=>makeRow(list,r[0],r[1],r[2],r[3],r[4]));
+  });
+}
+
+document.addEventListener('input',e=>{
+  if(e.target.classList.contains('kg')){refreshPlates();saveAttempts();renderForecast();}
+  if(e.target.id==='rival'){ try{localStorage.setItem('susan_rival',e.target.value)}catch(_){} renderForecast(); }
+  if(e.target.classList.contains('fstart')||e.target.classList.contains('fpos')||e.target.classList.contains('fsize')){
+    updateOpenerLabel(e.target.closest('.wu-calc')); saveFlights();
+  }
+});
+
+initWU();
+restoreAttempts();
+restoreFlights();
+refreshPlates();
+try{const rv=localStorage.getItem('susan_rival'); if(rv) document.getElementById('rival').value=rv;}catch(_){}
+renderForecast();
+</script>
+</body>
+</html>
