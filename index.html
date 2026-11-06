@@ -59,7 +59,12 @@
   .board iframe{display:none;width:100%;height:72vh;border:0;border-top:1px solid var(--line);background:#fff}
   .board.open iframe{display:block}
   .fp{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:14px}
-  .fp-head{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:4px}
+  .fp-head{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;gap:8px}
+  .fp-head .chev{font-size:12px}
+  .fp-sum{font-size:12px;color:#c2c9d2;text-transform:none;letter-spacing:0;margin-left:auto;font-variant-numeric:tabular-nums}
+  .fp-body{margin-top:6px}
+  .fp.closed .fp-body{display:none}
+  .fp:not(.closed) .fp-sum{display:none}
   .fp-sub{font-size:12px;color:#c2c9d2;margin-bottom:8px}
   .fp-in{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:8px}
   .fp-in label{display:block;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin-bottom:3px;text-align:center}
@@ -185,7 +190,7 @@
 <header>
   <div class="eyebrow"><span>MASS Strength</span><span>★ Meet Day</span></div>
   <h1>Susan — IDFPA Worlds</h1>
-  <div class="sub">Nov 7, 2026 · Houston · Flight B, one platform, lifting from 8:00 · Masters 75–79 · Best total 230 (Nov 2024) · Last meet 212.5 @ -65 (Jun 2026 Nationals)</div>
+  <div class="sub">Nov 7, 2026 · Houston · Weigh-in 6:00 AM · Flight B, one platform, lifting from 8:00 · Masters 75–79 · Best total 230 (Nov 2024) · Last meet 212.5 @ -65 (Jun 2026 Nationals)</div>
 </header>
 
 <!-- STICKY: attempt clock + lifters-until-up counter -->
@@ -228,9 +233,10 @@
 </div>
 
 <!-- FLIGHT PLAN -->
-<div class="fp">
-  <div class="fp-head">Flight plan · one platform</div>
-  <div class="fp-sub">Susan is in <b>Flight B</b>. Each lift goes A → B → C. Flight A squats at <b>8:00</b>.</div>
+<div class="fp" id="fp">
+  <div class="fp-head" onclick="toggleFP()"><span>Flight plan</span><span class="fp-sum" id="fp-sum">Flight B · W-in 6:00 · lifting 8:00</span><span class="chev" id="fp-chev">&#9660;</span></div>
+  <div class="fp-body">
+  <div class="fp-sub">Weigh-in <b>6:00 AM</b>. Susan is in <b>Flight B</b>. Each lift goes A → B → C. Flight A squats at <b>8:00</b>.</div>
   <div class="fp-in">
     <div><label>A lifters</label><input id="fp-a" inputmode="numeric" placeholder="#"></div>
     <div><label>B lifters</label><input id="fp-b" inputmode="numeric" placeholder="#"></div>
@@ -240,6 +246,7 @@
   </div>
   <div id="fp-out"></div>
   <div class="fp-note">Fill from LiftingCast in the morning. Times assume about 1 min per attempt and the break you enter between lifts. "Her spot" is her place in round 1 of Flight B (lightest opener goes first). Set count covers her opener only.</div>
+  </div>
 </div>
 
 <div class="collar"><span>Plate math: 20 kg bar</span><div class="tog" id="tog-collar" onclick="toggleCollar()"></div><span id="collar-lab">+ 2.5 kg collars</span></div>
@@ -441,6 +448,7 @@ function fpCalc(){
 }
 function renderFP(){
   const out=document.getElementById('fp-out'), r=fpCalc();
+  fpSummary();
   if(!r){ out.innerHTML=''; return; }
   const nm={sq:'SQ',bp:'BP',dl:'DL'}, wh={sq:'Flight A starts squatting (8:00)',bp:'Flight A starts benching',dl:'Flight A starts deadlifting'};
   out.innerHTML=r.map(x=>'<div class="fp-row"><span class="lk '+x.k+'">'+nm[x.k]+'</span><span class="tx">Count <b>'+x.count+'</b> when '+wh[x.k]+
@@ -460,6 +468,19 @@ function fpFill(){
     updateOpenerLabel(c);
   });
   saveFlights();
+}
+function toggleFP(force){
+  const el=document.getElementById('fp');
+  const closed = force===undefined ? !el.classList.contains('closed') : force;
+  el.classList.toggle('closed',closed);
+  document.getElementById('fp-chev').innerHTML = closed?'&#9654;':'&#9660;';
+  store('fpclosed',closed);
+}
+function fpSummary(){
+  const r=fpCalc(), s=document.getElementById('fp-sum');
+  if(r&&r[2].opener) s.textContent='SQ ~'+fmtTime(r[0].opener)+' · BP ~'+fmtTime(r[1].opener)+' · DL ~'+fmtTime(r[2].opener);
+  else if(r&&r[0].opener) s.textContent='SQ opener ~'+fmtTime(r[0].opener);
+  else s.textContent='Flight B · W-in 6:00 · lifting 8:00';
 }
 function saveFP(){ store('fp',['fp-a','fp-b','fp-c','fp-pos','fp-brk'].map(id=>document.getElementById(id).value)); }
 function restoreFP(){ const d=load('fp'); if(!d) return; ['fp-a','fp-b','fp-c','fp-pos','fp-brk'].forEach((id,i)=>document.getElementById(id).value=d[i]||''); }
@@ -758,7 +779,7 @@ renderForecast();
 renderCollar();
 document.getElementById('board-ext').href=BOARD_URL;
 syncCnum(); pace(); tickClock();
-restoreFP(); renderFP();
+restoreFP(); renderFP(); toggleFP(!!load('fpclosed'));
 </script>
 </body>
 </html>
